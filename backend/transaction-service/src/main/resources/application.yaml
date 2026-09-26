@@ -1,0 +1,23 @@
+server:
+  port: 8083
+
+spring:
+  config:
+    import: optional:configserver:http://localhost:8888
+  application:
+    name: transaction-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/digital_bank_transaction
+    username: root
+    password: root
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka

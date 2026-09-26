@@ -1,0 +1,150 @@
+server:
+  port: 8087
+
+spring:
+
+  application:
+    name: customer-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/customer_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Kolkata
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    show-sql: true
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    consumer:
+      group-id: customer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+eureka:
+
+  client:
+
+    register-with-eureka: true
+
+    fetch-registry: true
+
+    service-url:
+
+      defaultZone: http://localhost:8761/eureka
+
+  instance:
+    prefer-ip-address: true
+
+management:
+
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+
+  level:
+
+    root: INFO
+
+    org.springframework.security: DEBUG
+
+    org.springframework.cloud.gateway: INFO
+
+    com.revana.bank.customer: DEBUG
+
+springdoc:
+
+  api-docs:
+    enabled: true
+
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+resilience4j:
+
+  circuitbreaker:
+
+    instances:
+
+      accountService:
+
+        slidingWindowSize: 10
+
+        minimumNumberOfCalls: 5
+
+        permittedNumberOfCallsInHalfOpenState: 3
+
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+        waitDurationInOpenState: 10s
+
+        failureRateThreshold: 50
+
+        eventConsumerBufferSize: 10
+
+  retry:
+
+    instances:
+
+      accountService:
+
+        maxAttempts: 3
+
+        waitDuration: 2s
+
+  ratelimiter:
+
+    instances:
+
+      customerApi:
+
+        limitForPeriod: 20
+
+        limitRefreshPeriod: 1s
+
+        timeoutDuration: 0
+
+customer:
+
+  kafka:
+
+    topics:
+
+      customer-created: customer-created-topic
+
+      customer-updated: customer-updated-topic
+
+      customer-deleted: customer-deleted-topic

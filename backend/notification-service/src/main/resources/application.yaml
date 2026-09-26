@@ -1,0 +1,47 @@
+server:
+  port: 8084
+
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: revanapujari302@gmail.com
+    password: jgwl beyq kpgu ubde
+
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      group-id: notification-group
+      auto-offset-reset: earliest
+
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.revana.bank.notification.kafka.CustomerActivatedEvent
+        spring.json.use.type.headers: false
+
+
+  application:
+    name: notification-service
+
+  config:
+    import: optional:configserver:http://localhost:8888
+  datasource:
+    url: jdbc:mysql://localhost:3306/digital_bank_notification
+    username: root
+    password: root
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
