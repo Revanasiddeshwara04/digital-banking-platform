@@ -14,4 +14,6 @@ public interface AccountRepository
     Optional<Account> findByUserId(Long userId);
 
     List<Account> findByCustomerNameContainingIgnoreCase(String name);
+    boolean existsByCustomerId(
+            String customerId);
 }

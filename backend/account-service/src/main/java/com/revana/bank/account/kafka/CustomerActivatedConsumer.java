@@ -2,6 +2,7 @@ package com.revana.bank.account.kafka;
 
 import com.revana.bank.account.dto.CustomerActivatedEvent;
 import com.revana.bank.account.dto.CreateAccountRequest;
+import com.revana.bank.account.repository.AccountRepository;
 import com.revana.bank.account.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,9 @@ public class CustomerActivatedConsumer {
 
     private final AccountService accountService;
 
+
+    private final AccountRepository repository;
+
     @KafkaListener(
             topics = "customer-activated-topic",
             groupId = "account-group"
@@ -28,11 +32,16 @@ public class CustomerActivatedConsumer {
                 "CUSTOMER ACTIVATED EVENT RECEIVED = {}",
                 event);
 
+
         CreateAccountRequest request =
                 new CreateAccountRequest();
 
         request.setUserId(
                 event.getUserId()); // temporary
+
+        request.setCustomerId(
+                event.getCustomerId());
+
         request.setCustomerName(
                 event.getFirstName());
 

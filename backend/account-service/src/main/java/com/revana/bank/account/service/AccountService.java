@@ -77,10 +77,18 @@ private final TransactionClientService transactionService;
     public Account createAccount(
             CreateAccountRequest request) {
 
+        if(repository.existsByCustomerId(
+                request.getCustomerId())) {
+
+            throw new RuntimeException(
+                    "Account already exists for customer");
+        }
+
         System.out.println("CREATE ACCOUNT STARTED");
 
         Account account = Account.builder()
                 .userId(request.getUserId())
+                .customerId(request.getCustomerId())
                 .accountNumber(generateAccountNumber())
                 .customerName(request.getCustomerName())
                 .accountType(request.getAccountType())

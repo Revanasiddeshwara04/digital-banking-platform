@@ -9,6 +9,8 @@ public class CreateAccountRequest {
 
     private Long userId;
 
+    private String customerId;
+
     private String customerName;
 
     private String accountType;
