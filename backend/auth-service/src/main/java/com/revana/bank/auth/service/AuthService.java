@@ -11,6 +11,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.revana.bank.auth.exception.AccountLockedException;
 import java.time.LocalDateTime;
+import com.revana.bank.auth.dto.AuditEvent;
+import com.revana.bank.auth.kafka.AuditProducer;
+
+import java.util.UUID;
 
 
 @Service
@@ -20,17 +24,19 @@ public class AuthService {
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final AuditProducer auditProducer;
 
     public AuthService(
             UserRepository repository,
             PasswordEncoder encoder,
             JwtService jwtService,
-            RefreshTokenService refreshTokenService) {
+            RefreshTokenService refreshTokenService, AuditProducer auditProducer) {
 
         this.repository = repository;
         this.encoder = encoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
+        this.auditProducer = auditProducer;
     }
 
     public String register(RegisterRequest request) {
@@ -59,6 +65,22 @@ public class AuthService {
                 .build();
 
         repository.save(user);
+
+        auditProducer.publish(
+
+                AuditEvent.builder()
+                        .auditId(UUID.randomUUID().toString())
+                        .eventType("USER_REGISTERED")
+                        .serviceName("AUTH-SERVICE")
+                        .entityId(user.getId() != null ?
+                                user.getId().toString() :
+                                user.getUsername())
+                        .performedBy(user.getUsername())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(LocalDateTime.now())
+                        .payload(user.getEmail())
+                        .build()
+        );
 
         return "User Registered Successfully";
     }
@@ -105,6 +127,20 @@ public class AuthService {
 
                 repository.save(user);
 
+                auditProducer.publish(
+
+                        AuditEvent.builder()
+                                .auditId(UUID.randomUUID().toString())
+                                .eventType("LOGIN_FAILED")
+                                .serviceName("AUTH-SERVICE")
+                                .entityId(user.getId().toString())
+                                .performedBy(user.getUsername())
+                                .actionStatus("FAILED")
+                                .eventTimestamp(LocalDateTime.now())
+                                .payload("Invalid password")
+                                .build()
+                );
+
                 throw new AccountLockedException(
                         "Account locked due to multiple failed login attempts.");
             }
@@ -127,6 +163,20 @@ public class AuthService {
         RefreshToken refreshToken =
                 refreshTokenService
                         .createRefreshToken(user);
+
+        auditProducer.publish(
+
+                AuditEvent.builder()
+                        .auditId(UUID.randomUUID().toString())
+                        .eventType("LOGIN_SUCCESS")
+                        .serviceName("AUTH-SERVICE")
+                        .entityId(user.getId().toString())
+                        .performedBy(user.getUsername())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(LocalDateTime.now())
+                        .payload(user.getEmail())
+                        .build()
+        );
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
@@ -169,6 +219,20 @@ public class AuthService {
 
         refreshTokenService.deleteToken(
                 request.getRefreshToken());
+
+        auditProducer.publish(
+
+                AuditEvent.builder()
+                        .auditId(UUID.randomUUID().toString())
+                        .eventType("LOGOUT")
+                        .serviceName("AUTH-SERVICE")
+                        .entityId("NA")
+                        .performedBy("USER")
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(LocalDateTime.now())
+                        .payload("User logged out")
+                        .build()
+        );
 
         return "Logged Out Successfully";
     }

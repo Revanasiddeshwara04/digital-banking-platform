@@ -4,6 +4,7 @@ import com.revana.bank.customer.dto.*;
 import com.revana.bank.customer.entity.Customer;
 import com.revana.bank.customer.entity.CustomerAddress;
 import com.revana.bank.customer.entity.CustomerStatus;
+import com.revana.bank.customer.kafka.AuditProducer;
 import com.revana.bank.customer.kafka.event.CustomerCreatedEvent;
 import com.revana.bank.customer.kafka.producer.CustomerEventProducer;
 import com.revana.bank.customer.repository.CustomerAddressRepository;
@@ -34,6 +35,7 @@ public class CustomerService {
 
     private final CustomerEventProducer customerEventProducer;
     private final CustomerKafkaProducer customerKafkaProducer;
+    private final AuditProducer auditProducer;
 
 
     /**
@@ -59,6 +61,19 @@ public class CustomerService {
 
         Customer savedCustomer =
                 customerRepository.save(customer);
+
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(java.util.UUID.randomUUID().toString())
+                        .eventType("CUSTOMER_CREATED")
+                        .serviceName("CUSTOMER-SERVICE")
+                        .entityId(savedCustomer.getCustomerId())
+                        .performedBy(savedCustomer.getEmail())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(java.time.LocalDateTime.now())
+                        .payload(savedCustomer.getCustomerId())
+                        .build()
+        );
 
         publishCustomerCreatedEvent(savedCustomer);
 
@@ -134,6 +149,19 @@ public class CustomerService {
         Customer updatedCustomer =
                 customerRepository.save(customer);
 
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(java.util.UUID.randomUUID().toString())
+                        .eventType("CUSTOMER_UPDATED")
+                        .serviceName("CUSTOMER-SERVICE")
+                        .entityId(updatedCustomer.getCustomerId())
+                        .performedBy(updatedCustomer.getEmail())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(java.time.LocalDateTime.now())
+                        .payload(updatedCustomer.getCustomerId())
+                        .build()
+        );
+
         return mapToResponse(updatedCustomer);
     }
 
@@ -151,8 +179,26 @@ public class CustomerService {
                                         "Customer not found : "
                                                 + customerId));
 
+
+        System.out.println("PUBLISHING CUSTOMER_DELETED EVENT");
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(java.util.UUID.randomUUID().toString())
+                        .eventType("CUSTOMER_DELETED")
+                        .serviceName("CUSTOMER-SERVICE")
+                        .entityId(customer.getCustomerId())
+                        .performedBy(customer.getEmail())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(java.time.LocalDateTime.now())
+                        .payload(customer.getCustomerId())
+                        .build()
+        );
+
         customerRepository.delete(customer);
+
+        System.out.println("CUSTOMER_DELETED EVENT SENT");
     }
+
 
     /**
      * ADD CUSTOMER ADDRESS
@@ -196,6 +242,19 @@ public class CustomerService {
 
         CustomerAddress savedAddress =
                 customerAddressRepository.save(address);
+
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(java.util.UUID.randomUUID().toString())
+                        .eventType("ADDRESS_ADDED")
+                        .serviceName("CUSTOMER-SERVICE")
+                        .entityId(customer.getCustomerId())
+                        .performedBy(customer.getEmail())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(java.time.LocalDateTime.now())
+                        .payload(request.getAddressType().name())
+                        .build()
+        );
 
         return mapToAddressResponse(savedAddress);
     }
@@ -362,6 +421,19 @@ public class CustomerService {
         Customer updatedCustomer =
                 customerRepository.save(customer);
 
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(java.util.UUID.randomUUID().toString())
+                        .eventType("CUSTOMER_ACTIVATED")
+                        .serviceName("CUSTOMER-SERVICE")
+                        .entityId(customer.getCustomerId())
+                        .performedBy(customer.getEmail())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(java.time.LocalDateTime.now())
+                        .payload(customer.getStatus().name())
+                        .build()
+        );
+
         CustomerActivatedEvent event =
                 CustomerActivatedEvent.builder()
                         .userId(customer.getId())
@@ -397,6 +469,19 @@ public class CustomerService {
 
         Customer updatedCustomer =
                 customerRepository.save(customer);
+
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(java.util.UUID.randomUUID().toString())
+                        .eventType("CUSTOMER_DEACTIVATED")
+                        .serviceName("CUSTOMER-SERVICE")
+                        .entityId(customer.getCustomerId())
+                        .performedBy(customer.getEmail())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(java.time.LocalDateTime.now())
+                        .payload(customer.getStatus().name())
+                        .build()
+        );
 
         return mapToResponse(updatedCustomer);
     }
