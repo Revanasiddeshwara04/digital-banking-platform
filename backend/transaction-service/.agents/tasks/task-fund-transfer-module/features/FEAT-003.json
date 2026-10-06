@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Implement Kafka integration, JWT security configuration, REST controllers, and API documentation",
+  "status": "pending",
+  "steps": [
+    "Create KafkaConfig.java in src/main/java/com/revana/bank/transaction/config/ following account-service pattern with ConsumerFactory and KafkaListenerContainerFactory for FundTransferCompletedEvent.",
+    "Create KafkaProducerService.java in src/main/java/com/revana/bank/transaction/kafka/ for publishing FundTransferCompletedEvent to bank-transfer-topic.",
+    "Create SecurityConfig.java in src/main/java/com/revana/bank/transaction/config/ with JWT filter configuration, role-based authorization (CUSTOMER for transfers, ADMIN for viewing all transfers).",
+    "Create JwtFilter.java in src/main/java/com/revana/bank/transaction/security/ to validate Authorization tokens.",
+    "Create TransferController.java in src/main/java/com/revana/bank/transaction/controller/ with endpoints: POST /api/transfers, GET /api/transfers/{transactionReference}, GET /api/transfers/history with filtering by date range and status.",
+    "Add OpenAPI/Swagger configuration in SecurityConfig or separate OpenApiConfig class.",
+    "Update application.yaml in src/main/resources/ to add Kafka configuration: spring.kafka.bootstrap-servers: localhost:9092, producer/consumer properties.",
+    "Add JWT secret configuration to application.yaml: jwt.secret, jwt.expiration.",
+    "Create GlobalExceptionHandler.java in src/main/java/com/revana/bank/transaction/exception/ to handle all custom exceptions and return proper HTTP status codes.",
+    "Add @PreAuthorize annotations to controller methods for role-based access control."
+  ],
+  "acceptance_criteria": [
+    "Controllers return proper HTTP status codes (201 for created, 200 for success, 400 for validation errors, 401 for unauthorized, 403 for forbidden)",
+    "Kafka producer successfully publishes events",
+    "JWT filter validates tokens and extracts user roles",
+    "OpenAPI documentation is accessible at /swagger-ui.html",
+    "Global exception handler catches all custom exceptions"
+  ],
+  "verification": [
+    "Run mvn clean compile to verify code compiles",
+    "Test that application starts with security configuration",
+    "Verify Kafka producer configuration matches account-service pattern"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,30 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Create DTOs, service layer, and business logic for fund transfers with validation, error handling, and transaction processing",
+  "status": "pending",
+  "steps": [
+    "Create TransferRequest.java in src/main/java/com/revana/bank/transaction/dto/ with fields: sourceAccount, destinationAccount, amount, transferType, description. Add Jakarta validation annotations (@NotNull, @Positive, @Size).",
+    "Create TransferResponse.java in src/main/java/com/revana/bank/transaction/dto/ with fields: transactionReference, status, message, timestamp.",
+    "Create FundTransferCompletedEvent.java in src/main/java/com/revana/bank/transaction/dto/ with fields: transactionId, sourceAccount, destinationAccount, amount, timestamp, status.",
+    "Create exception classes in src/main/java/com/revana/bank/transaction/exception/: InsufficientBalanceException, AccountNotFoundException, AccountInactiveException, DailyLimitExceededException, InvalidTransferAmountException, SelfTransferNotAllowedException.",
+    "Create TransferService.java in src/main/java/com/revana/bank/transaction/service/ with methods: initiateTransfer, validateTransfer, processTransfer, debitAmount, creditAmount, checkDailyLimit, createTransactionRecord, updateAccountBalances (using Feign client).",
+    "Create AuditService.java in src/main/java/com/revana/bank/transaction/service/ for audit logging.",
+    "Update existing TransactionService.java to integrate with new TransferService.",
+    "Create Feign client interfaces in src/main/java/com/revana/bank/transaction/feign/: AccountClient (for account validation and balance updates), AuthClient (for JWT token validation and user role checking).",
+    "Add validation logic for all business rules: account existence, active status, sufficient balance, daily limit (₹5,00,000), same account check, positive amount."
+  ],
+  "acceptance_criteria": [
+    "Transfer validation logic correctly implements all business rules",
+    "Exception classes extend RuntimeException with proper constructors",
+    "Service methods have proper @Transactional annotations",
+    "Feign client interfaces have correct @FeignClient annotations",
+    "All DTOs use Lombok annotations and validation constraints"
+  ],
+  "verification": [
+    "Run mvn clean compile to verify code compiles",
+    "Create and run unit tests for TransferService validation logic"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

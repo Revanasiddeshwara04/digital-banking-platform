@@ -1,0 +1,26 @@
+{
+  "project_type": "Spring Boot 3.5.6 microservice with MySQL, Kafka, Eureka, OpenFeign",
+  "language": "Java 17",
+  "build_system": "Maven with spring-boot-maven-plugin",
+  "test_framework": "Spring Boot Test with JUnit 5, Mockito",
+  "build_command": "mvn clean compile",
+  "test_command": "mvn test",
+  "verification_instructions": "1. Run mvn clean compile to ensure code compiles. 2. Run mvn test to run all unit tests. 3. Check that application starts with mvn spring-boot:run -Dspring-boot.run.profiles=test. 4. Verify database migrations are applied correctly.",
+  "snapshot_or_generated_files": "target/classes - compiled classes, target/test-classes - test compiled classes",
+  "environment_constraints": "MySQL must be running on localhost:3307, Kafka on localhost:9092, Eureka on localhost:8761. Never restart dev server on :8083.",
+  "contribution_requirements": "Follow existing patterns from account-service. Use Lombok annotations for entities/DTOs. Use Builder pattern for entity creation. Follow package structure: entity, repository, service, controller, dto, config, exception, kafka, feign.",
+  "key_patterns": "1. Entities use @Entity, @Table, Lombok annotations (@Getter, @Setter, @NoArgsConstructor, @AllArgsConstructor, @Builder). 2. Services use @Service, constructor injection. 3. Controllers use @RestController, @RequestMapping. 4. DTOs use Lombok @Data or @Getter/@Setter. 5. Kafka configuration follows account-service pattern with ConsumerFactory and KafkaListenerContainerFactory. 6. Repository interfaces extend JpaRepository.",
+  "relevant_files": [
+    "backend/transaction-service/src/main/java/com/revana/bank/transaction/entity/Transaction.java",
+    "backend/transaction-service/src/main/java/com/revana/bank/transaction/repository/TransactionRepository.java",
+    "backend/transaction-service/src/main/java/com/revana/bank/transaction/service/TransactionService.java",
+    "backend/transaction-service/src/main/java/com/revana/bank/transaction/controller/TransactionController.java",
+    "backend/transaction-service/src/main/java/com/revana/bank/transaction/dto/TransactionRequest.java",
+    "backend/account-service/src/main/java/com/revana/bank/account/config/KafkaConfig.java",
+    "backend/account-service/src/main/java/com/revana/bank/account/kafka/AuditProducer.java",
+    "backend/account-service/src/main/java/com/revana/bank/account/entity/Account.java",
+    "backend/account-service/src/main/java/com/revana/bank/account/entity/Transaction.java",
+    "backend/auth-service/src/main/java/com/revana/bank/auth/security/*"
+  ],
+  "directory_structure": "src/main/java/com/revana/bank/transaction/ - main packages: entity (entities), repository (JPA repositories), service (business logic), controller (REST endpoints), dto (data transfer objects), config (configuration classes), exception (custom exceptions), kafka (Kafka producers/consumers). src/test/java/com/revana/bank/transaction/ - test packages mirroring main structure."
+}

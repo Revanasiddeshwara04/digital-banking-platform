@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Enhance existing Transaction entity and create new Transfer, AuditLog entities with repositories for fund transfer functionality",
+  "status": "pending",
+  "steps": [
+    "Enhance Transaction.java in src/main/java/com/revana/bank/transaction/entity/ to add fields: transactionReference (String), sourceAccount (String), destinationAccount (String), transferType (enum), description (String), dailyLimitCheck (boolean). Add @PrePersist for transactionReference generation.",
+    "Create Transfer.java entity in src/main/java/com/revana/bank/transaction/entity/ with fields: id, transactionReference, sourceAccount, destinationAccount, amount, transferType (IMPS, NEFT, RTGS), description, status (PENDING, SUCCESS, FAILED, REVERSED), createdAt. Use Lombok annotations following existing pattern.",
+    "Create AuditLog.java entity in src/main/java/com/revana/bank/transaction/entity/ with fields: id, userId, sourceAccount, destinationAccount, amount, action, details, timestamp, status. Use Lombok annotations.",
+    "Create TransferRepository.java in src/main/java/com/revana/bank/transaction/repository/ extending JpaRepository<Transfer, Long> with methods: findByTransactionReference, findBySourceAccount, findByDestinationAccount, findByStatus, findByCreatedAtBetween.",
+    "Create AuditLogRepository.java in src/main/java/com/revana/bank/transaction/repository/ extending JpaRepository<AuditLog, Long>.",
+    "Create TransferStatus.java enum in src/main/java/com/revana/bank/transaction/entity/ with values: PENDING, SUCCESS, FAILED, REVERSED.",
+    "Create TransferType.java enum in src/main/java/com/revana/bank/transaction/entity/ with values: IMPS, NEFT, RTGS.",
+    "Update TransactionRepository.java to add findByTransactionReference method."
+  ],
+  "acceptance_criteria": [
+    "mvn clean compile succeeds with no compilation errors",
+    "All entities compile with Lombok annotations correctly",
+    "Repository interfaces extend JpaRepository with correct generic types",
+    "Enums are properly defined with all required values"
+  ],
+  "verification": [
+    "Run mvn clean compile to verify code compiles",
+    "Run mvn test to ensure existing tests still pass"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

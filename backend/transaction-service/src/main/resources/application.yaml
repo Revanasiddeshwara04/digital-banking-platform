@@ -8,7 +8,7 @@ spring:
     name: transaction-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/digital_bank_transaction
+    url: jdbc:mysql://localhost:3307/digital_bank_transaction
     username: root
     password: root
 

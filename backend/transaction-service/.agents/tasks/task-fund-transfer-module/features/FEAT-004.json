@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-004",
+  "type": "test",
+  "description": "Create comprehensive unit tests and update pom.xml with required dependencies",
+  "status": "pending",
+  "steps": [
+    "Update pom.xml to add dependencies: spring-boot-starter-security, spring-security-test, springdoc-openapi-starter-webmvc-ui, jjwt-api, jjwt-impl, jjwt-jackson for JWT support.",
+    "Create TransferServiceTest.java in src/test/java/com/revana/bank/transaction/service/ with unit tests for: initiateTransfer validation, insufficient balance, account not found, daily limit exceeded, successful transfer.",
+    "Create TransferControllerTest.java in src/test/java/com/revana/bank/transaction/controller/ with @WebMvcTest for testing REST endpoints with MockMvc.",
+    "Create SecurityConfigTest.java in src/test/java/com/revana/bank/transaction/config/ for security configuration testing.",
+    "Create KafkaProducerServiceTest.java in src/test/java/com/revana/bank/transaction/kafka/ for testing Kafka event publishing.",
+    "Create test data builders for Transfer, TransferRequest, TransferResponse using Builder pattern.",
+    "Add @MockBean for Feign clients in controller tests.",
+    "Add test coverage for all business rules and edge cases.",
+    "Ensure all test classes follow the same package structure as production code (src/test/java/com/revana/bank/transaction/).",
+    "Add integration test for end-to-end transfer flow using @SpringBootTest."
+  ],
+  "acceptance_criteria": [
+    "All unit tests pass with mvn test",
+    "Test coverage exceeds 80% for service and controller layers",
+    "Security tests verify role-based access control",
+    "Kafka tests verify event publishing",
+    "Integration test validates complete transfer flow"
+  ],
+  "verification": [
+    "Run mvn test to execute all unit tests",
+    "Run mvn clean verify to run full test suite",
+    "Check test coverage report in target/site/jacoco/"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
