@@ -10,7 +10,7 @@ spring:
       enabled: false
 
   datasource:
-    url: jdbc:mysql://localhost:3306/kyc_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Kolkata
+    url: jdbc:mysql://localhost:3307/kyc_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Kolkata
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -84,3 +84,8 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
+
+
+jwt:
+  secret: MyVerySecureBankingJWTSecretKeyForDevelopment2026
+  expiration: 18900000

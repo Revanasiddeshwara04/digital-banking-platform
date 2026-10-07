@@ -1,4 +1,4 @@
-package com.revana.bank.auth.jwt;
+package com.revana.bank.kyc.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

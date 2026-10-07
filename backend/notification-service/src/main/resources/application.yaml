@@ -26,7 +26,7 @@ spring:
 
       properties:
         spring.json.trusted.packages: "*"
-        spring.json.value.default.type: com.revana.bank.notification.kafka.CustomerActivatedEvent
+        spring.json.value.default.type: com.revana.bank.notification.dto.TransactionEvent
         spring.json.use.type.headers: false
 
 
@@ -36,7 +36,7 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
   datasource:
-    url: jdbc:mysql://localhost:3306/digital_bank_notification
+    url: jdbc:mysql://localhost:3307/digital_bank_notification
     username: root
     password: root
 

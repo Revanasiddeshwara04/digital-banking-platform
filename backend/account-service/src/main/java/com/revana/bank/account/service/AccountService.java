@@ -10,6 +10,7 @@ import com.revana.bank.account.entity.Transaction;
 import com.revana.bank.account.exception.AccessDeniedException;
 import com.revana.bank.account.exception.AccountNotFoundException;
 import com.revana.bank.account.exception.RateLimitExceededException;
+import com.revana.bank.account.kafka.AuditProducer;
 import com.revana.bank.account.repository.AccountRepository;
 import com.revana.bank.account.repository.TransactionRepository;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
@@ -44,6 +45,7 @@ private final TransactionClientService transactionService;
     private final NotificationEventProducer notificationProducer;
     private final AuthClient authClient;
     private final RateLimiterService rateLimiterService;
+    private final AuditProducer auditProducer;
 
 
     public AccountService(
@@ -58,7 +60,7 @@ private final TransactionClientService transactionService;
             NotificationEventProducer notificationProducer,
             AuthClient authClient,
 
-            RateLimiterService rateLimiterService) {
+            RateLimiterService rateLimiterService, AuditProducer auditProducer) {
 
         this.repository = repository;
         this.transactionRepository = transactionRepository;
@@ -71,6 +73,7 @@ private final TransactionClientService transactionService;
         this.notificationProducer = notificationProducer;
         this.authClient = authClient;
         this.rateLimiterService = rateLimiterService;
+        this.auditProducer = auditProducer;
     }
 
 
@@ -99,8 +102,23 @@ private final TransactionClientService transactionService;
 
         System.out.println("ACCOUNT OBJECT CREATED");
 
+        Account savedAccount =
+                repository.save(account);
 
-        return repository.save(account);
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(java.util.UUID.randomUUID().toString())
+                        .eventType("ACCOUNT_CREATED")
+                        .serviceName("ACCOUNT-SERVICE")
+                        .entityId(savedAccount.getAccountNumber())
+                        .performedBy(savedAccount.getCustomerName())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(LocalDateTime.now())
+                        .payload(savedAccount.getCustomerId())
+                        .build()
+        );
+
+        return savedAccount;
 
     }
 
@@ -211,6 +229,19 @@ private final TransactionClientService transactionService;
 
         Account updatedAccount = repository.save(account);
 
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(UUID.randomUUID().toString())
+                        .eventType("ACCOUNT_DEPOSIT")
+                        .serviceName("ACCOUNT-SERVICE")
+                        .entityId(updatedAccount.getAccountNumber())
+                        .performedBy(updatedAccount.getCustomerName())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(LocalDateTime.now())
+                        .payload(amount.toString())
+                        .build()
+        );
+
         TransactionRequest txRequest =
                 TransactionRequest.builder()
                         .fromAccountId(id)
@@ -295,6 +326,19 @@ private final TransactionClientService transactionService;
 
         Account updatedAccount =
                 repository.save(account);
+
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(UUID.randomUUID().toString())
+                        .eventType("ACCOUNT_WITHDRAW")
+                        .serviceName("ACCOUNT-SERVICE")
+                        .entityId(updatedAccount.getAccountNumber())
+                        .performedBy(updatedAccount.getCustomerName())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(LocalDateTime.now())
+                        .payload(amount.toString())
+                        .build()
+        );
 
         TransactionRequest txRequest =
                 TransactionRequest.builder()
@@ -391,6 +435,23 @@ private final TransactionClientService transactionService;
 
         repository.save(sender);
         repository.save(receiver);
+
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(UUID.randomUUID().toString())
+                        .eventType("ACCOUNT_TRANSFER")
+                        .serviceName("ACCOUNT-SERVICE")
+                        .entityId(sender.getAccountNumber())
+                        .performedBy(sender.getCustomerName())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(LocalDateTime.now())
+                        .payload(
+                                request.getAmount() +
+                                        " transferred to " +
+                                        receiver.getAccountNumber()
+                        )
+                        .build()
+        );
 
         TransactionRequest txRequest =
                 TransactionRequest.builder()
@@ -535,7 +596,23 @@ private final TransactionClientService transactionService;
         account.setStatus("CLOSED");
         account.setClosedAt(LocalDateTime.now());
 
-        return repository.save(account);
+        Account savedAccount =
+                repository.save(account);
+
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(UUID.randomUUID().toString())
+                        .eventType("ACCOUNT_CLOSED")
+                        .serviceName("ACCOUNT-SERVICE")
+                        .entityId(savedAccount.getAccountNumber())
+                        .performedBy(savedAccount.getCustomerName())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(LocalDateTime.now())
+                        .payload("Account Closed")
+                        .build()
+        );
+
+        return savedAccount;
     }
     public List<Account> searchByName(String name) {
         return repository

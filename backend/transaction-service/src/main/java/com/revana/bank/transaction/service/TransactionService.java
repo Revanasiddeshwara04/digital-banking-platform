@@ -2,7 +2,6 @@ package com.revana.bank.transaction.service;
 
 import com.revana.bank.transaction.dto.TransactionRequest;
 import com.revana.bank.transaction.entity.Transaction;
-import com.revana.bank.transaction.entity.TransferStatus;
 import com.revana.bank.transaction.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 
@@ -22,9 +21,11 @@ import java.util.List;
 public class TransactionService {
 
     private final TransactionRepository repository;
+    private final TransferService transferService;
 
-    public TransactionService(TransactionRepository repository) {
+    public TransactionService(TransactionRepository repository, TransferService transferService) {
         this.repository = repository;
+        this.transferService = transferService;
     }
 
     // ── Existing methods — untouched ─────────────────────────────────────
@@ -56,5 +57,20 @@ public class TransactionService {
 
     public List<Transaction> getByAccount(Long accountId) {
         return repository.findByFromAccountIdOrToAccountId(accountId, accountId);
+    }
+    
+    /**
+     * New method to demonstrate integration with TransferService.
+     * Converts legacy transaction to transfer format for reporting.
+     */
+    public String getTransferReferenceForTransaction(Long transactionId) {
+        Transaction transaction = getTransaction(transactionId);
+        if (transaction == null) {
+            return null;
+        }
+        
+        // In a real integration, we might look up the corresponding transfer
+        // or convert transaction data to transfer format
+        return "TXN-" + transaction.getId();
     }
 }

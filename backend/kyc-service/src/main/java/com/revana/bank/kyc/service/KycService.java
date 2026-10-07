@@ -1,14 +1,17 @@
 package com.revana.bank.kyc.service;
 
 import com.revana.bank.kyc.client.CustomerFeignClient;
+import com.revana.bank.kyc.dto.AuditEvent;
 import com.revana.bank.kyc.dto.CreateKycRequest;
 import com.revana.bank.kyc.dto.KycResponse;
 import com.revana.bank.kyc.entity.KycDetail;
 import com.revana.bank.kyc.entity.KycStatus;
+import com.revana.bank.kyc.kafka.AuditProducer;
 import com.revana.bank.kyc.repository.KycRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.time.LocalDateTime;
 
@@ -19,6 +22,7 @@ public class KycService {
 
     private final KycRepository kycRepository;
     private final CustomerFeignClient customerFeignClient;
+    private final AuditProducer auditProducer;
 
     public KycResponse createKyc(
             CreateKycRequest request) {
@@ -32,8 +36,23 @@ public class KycService {
                 .status(KycStatus.PENDING)
                 .build();
 
-        return mapToResponse(
-                kycRepository.save(kyc));
+        KycDetail savedKyc =
+                kycRepository.save(kyc);
+
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(java.util.UUID.randomUUID().toString())
+                        .eventType("KYC_CREATED")
+                        .serviceName("KYC-SERVICE")
+                        .entityId(savedKyc.getKycId())
+                        .performedBy(savedKyc.getCustomerId())
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(LocalDateTime.now())
+                        .payload(savedKyc.getPanNumber())
+                        .build()
+        );
+
+        return mapToResponse(savedKyc);
     }
 
     @Transactional(readOnly = true)
@@ -66,15 +85,29 @@ public class KycService {
                 .activateCustomer(
                         kyc.getCustomerId());
 
-        System.out.println(
-                "After Feign Call");
+        System.out.println("After Feign Call");
 
         kyc.setStatus(KycStatus.APPROVED);
         kyc.setVerifiedBy(verifiedBy);
         kyc.setVerifiedAt(LocalDateTime.now());
 
-        return mapToResponse(
-                kycRepository.save(kyc));
+        KycDetail savedKyc =
+                kycRepository.save(kyc);
+
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(java.util.UUID.randomUUID().toString())
+                        .eventType("KYC_APPROVED")
+                        .serviceName("KYC-SERVICE")
+                        .entityId(savedKyc.getKycId())
+                        .performedBy(verifiedBy)
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(LocalDateTime.now())
+                        .payload(savedKyc.getCustomerId())
+                        .build()
+        );
+
+        return mapToResponse(savedKyc);
     }
 
     public KycResponse rejectKyc(
@@ -90,8 +123,23 @@ public class KycService {
         kyc.setStatus(KycStatus.REJECTED);
         kyc.setRemarks(remarks);
 
-        return mapToResponse(
-                kycRepository.save(kyc));
+        KycDetail savedKyc =
+                kycRepository.save(kyc);
+
+        auditProducer.publish(
+                AuditEvent.builder()
+                        .auditId(java.util.UUID.randomUUID().toString())
+                        .eventType("KYC_REJECTED")
+                        .serviceName("KYC-SERVICE")
+                        .entityId(savedKyc.getKycId())
+                        .performedBy("ADMIN")
+                        .actionStatus("SUCCESS")
+                        .eventTimestamp(LocalDateTime.now())
+                        .payload(remarks)
+                        .build()
+        );
+
+        return mapToResponse(savedKyc);
     }
 
     private KycResponse mapToResponse(

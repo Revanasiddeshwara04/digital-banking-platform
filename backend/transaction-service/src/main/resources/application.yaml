@@ -1,23 +1,89 @@
+# ════════════════════════════════════════════════════════════════════════════
+# ── OLD CODE (original application.yaml) ────────────────────────────────────
+# server:
+#   port: 8083
+#
+# spring:
+#   config:
+#     import: optional:configserver:http://localhost:8888
+#   application:
+#     name: transaction-service
+#
+#   datasource:
+#     url: jdbc:mysql://localhost:3307/digital_bank_transaction
+#     username: root
+#     password: root
+#
+#   jpa:
+#     hibernate:
+#       ddl-auto: update
+#     show-sql: true
+#
+# eureka:
+#   client:
+#     service-url:
+#       defaultZone: http://localhost:8761/eureka
+# ════════════════════════════════════════════════════════════════════════════
+
+# ── NEW CODE ─────────────────────────────────────────────────────────────────
+
 server:
   port: 8083
 
 spring:
   config:
     import: optional:configserver:http://localhost:8888
+
   application:
     name: transaction-service
 
+  # ── Database ───────────────────────────────────────────────────────────────
   datasource:
     url: jdbc:mysql://localhost:3307/digital_bank_transaction
     username: root
     password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
 
+  # ── Kafka producer ─────────────────────────────────────────────────────────
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false   # keep events schema-agnostic
+
+# ── JWT — must match the secret used in auth-service ─────────────────────────
+jwt:
+  secret: revana-bank-jwt-secret-key-256bits-long-enough
+  expiration: 86400000   # 24 hours in milliseconds
+
+# ── Eureka ─────────────────────────────────────────────────────────────────
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+
+# ── SpringDoc / Swagger UI ─────────────────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+# ── Actuator ──────────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
